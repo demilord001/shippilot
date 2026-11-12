@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { auth } from "@clerk/nextjs/server"; import { sql, ensureSchema } from "@/lib/db";
+export async function GET(){try{const {userId}=await auth();if(!userId)return NextResponse.json({error:"Authentication required."},{status:401});await ensureSchema();const members=await sql`SELECT id,full_name,email,avatar_url,created_at FROM users ORDER BY created_at DESC LIMIT 50`;return NextResponse.json({members})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Unable to load members."},{status:500})}}

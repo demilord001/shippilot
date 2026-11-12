@@ -1,19 +1,4 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-
-const isClerkConfigured = 
-  !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
-  !!process.env.CLERK_SECRET_KEY;
-
-export default isClerkConfigured 
-  ? clerkMiddleware() 
-  : () => NextResponse.next();
-
-export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html|css|js|gif|svg|jpg|jpeg|png|woff|woff2|ico|csv|docx|xlsx|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
-};
+import { clerkMiddleware } from "@clerk/nextjs/server"; import { NextResponse } from "next/server";
+const configured=Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY); const protectedPaths=["/dashboard","/community"];
+export default configured ? clerkMiddleware(async (auth,req)=>{const {userId}=await auth();const path=req.nextUrl.pathname;const protectedRoute=protectedPaths.some(prefix=>path===prefix||path.startsWith(`${prefix}/`));if(protectedRoute&&!userId)return NextResponse.redirect(new URL(`/sign-in?redirect_url=${encodeURIComponent(path)}`,req.url));if(path==="/"&&userId)return NextResponse.redirect(new URL("/dashboard",req.url));}) : (req:Request)=>{const path=new URL(req.url).pathname;if(protectedPaths.some(prefix=>path===prefix||path.startsWith(`${prefix}/`)))return NextResponse.redirect(new URL(`/sign-in?redirect_url=${encodeURIComponent(path)}`,req.url));return NextResponse.next()};
+export const config={matcher:["/((?!_next|[^?]*\\.(?:html|css|js|gif|svg|jpg|jpeg|png|woff|woff2|ico|csv|webmanifest)).*)"]};

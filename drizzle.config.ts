@@ -1,4 +1,4 @@
-import { defineConfig } from 'drizzle-kit';
+﻿import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
   schema: './db/schema.ts',
@@ -9,3 +9,4 @@ export default defineConfig({
   },
   tablesFilter: ['!pg_stat_monitor*', '!pg_stat_statements*'],
 });
+
